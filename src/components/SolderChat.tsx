@@ -4,6 +4,7 @@ import { Send, Sparkles, Wrench, RefreshCw, User, HelpCircle } from "lucide-reac
 
 interface Props {
   onUnlockBadge: (badgeId: string) => void;
+  lang: "en" | "fr";
 }
 
 const FAQS = [
@@ -13,7 +14,7 @@ const FAQS = [
   "My kit didn't come with lock-washers. Should I buy some at the hardware shelf?"
 ];
 
-export function SolderChat({ onUnlockBadge }: Props) {
+export function SolderChat({ onUnlockBadge, lang }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",

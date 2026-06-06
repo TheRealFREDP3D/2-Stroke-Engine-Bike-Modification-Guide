@@ -19,9 +19,10 @@ import {
 interface VideoTutorialsProps {
   videos: VideoGuide[];
   onUnlockBadge: (badgeId: string) => void;
+  lang: "en" | "fr";
 }
 
-export function VideoTutorials({ videos, onUnlockBadge }: VideoTutorialsProps) {
+export function VideoTutorials({ videos, onUnlockBadge, lang }: VideoTutorialsProps) {
   const [activeGuideIdx, setActiveGuideIdx] = useState(0);
   const [selectedChapterTime, setSelectedChapterTime] = useState("0:00");
   const [isPlaying, setIsPlaying] = useState(false);

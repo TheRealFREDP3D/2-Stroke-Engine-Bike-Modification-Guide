@@ -8,6 +8,7 @@ import {
   Sparkles,
   Award
 } from "lucide-react";
+import { UI_TRANSLATIONS } from "../locales";
 
 interface BoltState {
   id: number;
@@ -18,12 +19,18 @@ interface BoltState {
   final: boolean; // spec tight (second pass 100%)
 }
 
-export function TorqueGuide() {
+interface Props {
+  lang: "en" | "fr";
+}
+
+export function TorqueGuide({ lang }: Props) {
+  const t = UI_TRANSLATIONS[lang];
+
   const initialBolts: BoltState[] = [
-    { id: 1, name: "Bolt A (Top-Left)", position: { x: 28, y: 28 }, currentTorque: 0, snug: false, final: false },
-    { id: 2, name: "Bolt B (Bottom-Right)", position: { x: 72, y: 72 }, currentTorque: 0, snug: false, final: false },
-    { id: 3, name: "Bolt C (Top-Right)", position: { x: 72, y: 28 }, currentTorque: 0, snug: false, final: false },
-    { id: 4, name: "Bolt D (Bottom-Left)", position: { x: 28, y: 72 }, currentTorque: 0, snug: false, final: false }
+    { id: 1, name: lang === "fr" ? "Boulon A (Haut-Gauche)" : "Bolt A (Top-Left)", position: { x: 28, y: 28 }, currentTorque: 0, snug: false, final: false },
+    { id: 2, name: lang === "fr" ? "Boulon B (Bas-Droite)" : "Bolt B (Bottom-Right)", position: { x: 72, y: 72 }, currentTorque: 0, snug: false, final: false },
+    { id: 3, name: lang === "fr" ? "Boulon C (Haut-Droite)" : "Bolt C (Top-Right)", position: { x: 72, y: 28 }, currentTorque: 0, snug: false, final: false },
+    { id: 4, name: lang === "fr" ? "Boulon D (Bas-Gauche)" : "Bolt D (Bottom-Left)", position: { x: 28, y: 72 }, currentTorque: 0, snug: false, final: false }
   ];
 
   const [bolts, setBolts] = useState<BoltState[]>(initialBolts);
@@ -79,9 +86,8 @@ export function TorqueGuide() {
     if (targetId !== expectedBoltId) {
       // Mechanical penalty warning: uneven stress
       playSynthesizedTone(150, 0.25, "sawtooth");
-      setErrorMessage(
-        `Wrong Bolt! You attempted to tighten Bolt ${targetId} out of order. Doing so places asymmetric stress on the aluminum casing, which leads to hair-line stress cracks when the high-frequency 2-stroke vibration begins.`
-      );
+      const wrongMsg = t.torque_wrong_bolt.replace("{id}", targetId.toString());
+      setErrorMessage(wrongMsg);
       return;
     }
 
@@ -138,10 +144,10 @@ export function TorqueGuide() {
         <div>
           <span className="flex items-center gap-1.5 text-xs text-amber-400 font-mono tracking-widest uppercase font-semibold">
             <Wrench className="w-4 h-4 text-amber-500" />
-            Star Sequence & Mechanical Strain
+            {t.torque_warning_head}
           </span>
           <h3 className="text-lg md:text-xl font-bold text-white mt-1">
-            Engine Mount Star-Pattern Torque Spec Classroom
+            {t.torque_title}
           </h3>
         </div>
         <div className="flex items-center gap-3">
@@ -152,13 +158,13 @@ export function TorqueGuide() {
               onChange={() => setSoundEnabled(!soundEnabled)}
               className="rounded accent-amber-500 bg-gray-950 border-gray-850 cursor-pointer"
             />
-            Mechanical Audio Tones
+            {t.torque_audio_switch}
           </label>
           <button
             onClick={handleReset}
             className="p-1 px-2.5 bg-gray-900 hover:bg-gray-850 text-gray-300 rounded-lg text-[10px] font-mono border border-gray-800 uppercase flex items-center gap-1 cursor-pointer"
           >
-            <RotateCcw className="w-3 h-3" /> Reset Sim
+            <RotateCcw className="w-3 h-3" /> {t.torque_reset}
           </button>
         </div>
       </div>
@@ -180,7 +186,7 @@ export function TorqueGuide() {
             <div className="absolute top-3 left-3 right-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 p-2 text-xs rounded-lg flex items-center justify-between gap-1.5 z-20">
               <span className="flex items-center gap-1.5 font-bold">
                 <Award className="w-4 h-4 text-emerald-400 shrink-0" />
-                STAR PATTERN COMPLETED: 1.2 Nm Uniform Tension Lock!
+                {t.torque_success_medal}
               </span>
               <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded-full font-bold">
                 PERFECT
@@ -193,13 +199,11 @@ export function TorqueGuide() {
             <div className="w-full bg-gray-950/80 p-2.5 border border-gray-900 rounded-lg text-center text-xs text-gray-400 max-w-sm mx-auto z-10 font-mono">
               {stepNumber < 4 ? (
                 <span>
-                  Pass 1: Click the next bolt diagonally to apply light{" "}
-                  <strong className="text-amber-400 font-bold">Snug Torque (35%)</strong>!
+                  {t.torque_pass1}
                 </span>
               ) : (
                 <span>
-                  Pass 2: Click the same sequence to crank down to{" "}
-                  <strong className="text-cyan-400 font-bold">Specs final Torque (100%)</strong>!
+                  {t.torque_pass2}
                 </span>
               )}
             </div>
@@ -325,7 +329,7 @@ export function TorqueGuide() {
 
                   {/* Absolute positioning detail note */}
                   <span className="absolute top-11.5 left-1/2 transform -translate-x-1/2 text-[8px] font-mono font-semibold whitespace-nowrap bg-gray-950 px-1 py-0.5 rounded border border-gray-800 text-gray-400 group-hover:text-white">
-                    {torquePercentage === 0 ? "0%" : torquePercentage < 100 ? `${torquePercentage}% Snug` : "100% SPEC!"}
+                    {torquePercentage === 0 ? "0%" : torquePercentage < 100 ? `${torquePercentage}% ${t.torque_snug}` : `100% ${t.torque_specs}`}
                   </span>
                 </button>
               );
@@ -334,7 +338,7 @@ export function TorqueGuide() {
 
           {/* Torque Progression Status Track */}
           <div className="w-full bg-gray-950/70 border border-gray-900 p-2.5 rounded-lg flex items-center justify-between text-[11px] font-mono z-10">
-            <span className="text-gray-500 uppercase tracking-widest text-[9px]">Star Progression:</span>
+            <span className="text-gray-500 uppercase tracking-widest text-[9px]">{t.torque_progression}</span>
             <div className="flex items-center gap-1">
               {[0, 1, 2, 3, 4, 5, 6, 7].map((s_idx) => {
                 const isActive = stepNumber === s_idx;
@@ -363,35 +367,35 @@ export function TorqueGuide() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <span className="p-1 px-2.5 bg-amber-500/10 text-amber-400 font-mono text-[9px] font-bold rounded-md uppercase tracking-wider">
-                Vibration Physics
+                {t.torque_sidebar_badge}
               </span>
-              <span className="text-[10px] text-gray-500 font-mono">ADULT ADVISOR NOTE</span>
+              <span className="text-[10px] text-gray-500 font-mono">{t.torque_advisor_note}</span>
             </div>
 
             <h4 className="text-sm font-bold text-white tracking-wide">
-              Why Tighten Engine Mounts in a "Star Pattern"?
+              {t.torque_sidebar_headline}
             </h4>
 
-            <div className="text-xs text-Gray-300 space-y-3 leading-relaxed">
+            <div className="text-xs text-gray-300 space-y-3 leading-relaxed border-0">
               <p>
-                A high speed 2-stroke engine converts fuel energy into violent linear inertia (piston going up and down at up to 6,000 RPM). This generates intense radial mechanical vibrations.
+                {t.torque_sidebar_p1}
               </p>
               <div className="p-3 bg-gray-950/35 border border-gray-850 rounded-xl space-y-2 text-gray-400 text-[11px]">
                 <div className="flex items-start gap-1.5">
                   <span className="text-rose-400">🚨</span>
                   <span>
-                    <strong className="text-gray-300 font-semibold">Uneven Clamping Warn:</strong> fully tightening a single bolt first tilts the steel mounting adapter plates, introducing high shear focus stress points and misaligning thread runs.
+                    <strong className="text-gray-300 font-semibold">{t.torque_sidebar_uneven}</strong> {t.torque_sidebar_uneven_desc}
                   </span>
                 </div>
                 <div className="flex items-start gap-1.5">
                   <span className="text-cyan-400">💡</span>
                   <span>
-                    <strong className="text-gray-300 font-semibold">Star Sequence Cure:</strong> By alternating diagonally, you distribute compression forces uniformly. Doing so prevents casting fractures and frame-crimping slips.
+                    <strong className="text-gray-300 font-semibold">{t.torque_sidebar_star}</strong> {t.torque_sidebar_star_desc}
                   </span>
                 </div>
               </div>
               <p>
-                For premium security, mechanics recommend a <strong className="text-white">dual-pass process</strong>. First snug all bolts to 35% tension so the surfaces square up, then apply full specified standard torque (usually <strong>18–22 Nm</strong>) in the identical diagonal pattern.
+                {t.torque_sidebar_p2}
               </p>
             </div>
           </div>
@@ -399,7 +403,7 @@ export function TorqueGuide() {
           <div className="mt-5 pt-3.5 border-t border-gray-850 text-xs text-gray-500 flex items-center justify-between">
             <span className="flex items-center gap-1">
               <CheckCircle className={`w-3.5 h-3.5 ${success ? "text-emerald-500" : "text-gray-700"}`} />
-              Classroom state: {success ? "COMPLETED" : "IN PROGRESS"}
+              {t.torque_class_state} {success ? t.torque_completed : t.torque_in_progress}
             </span>
             <span className="font-mono text-[9px] text-gray-600">UNIFORM_TENSION_VERIFY</span>
           </div>

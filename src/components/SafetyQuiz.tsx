@@ -5,9 +5,10 @@ import { ShieldCheck, ArrowRight, Check, X, RefreshCw, Trophy } from "lucide-rea
 interface Props {
   questions: QuizQuestion[];
   onUnlockBadge: (badgeId: string) => void;
+  lang: "en" | "fr";
 }
 
-export function SafetyQuiz({ questions, onUnlockBadge }: Props) {
+export function SafetyQuiz({ questions, onUnlockBadge, lang }: Props) {
   const [currentIdx, setCurrentIdx] = useState<number>(0);
   const [selectedOpt, setSelectedOpt] = useState<number | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);

@@ -17,9 +17,10 @@ import {
 interface Props {
   stages: EngineStage[];
   onUnlockBadge: (badgeId: string) => void;
+  lang: "en" | "fr";
 }
 
-export function EngineCycle({ stages, onUnlockBadge }: Props) {
+export function EngineCycle({ stages, onUnlockBadge, lang }: Props) {
   const [activeStageIndex, setActiveStageIndex] = useState<number>(0);
   const [cycledIds, setCycledIds] = useState<string[]>([stages[0].id]);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);

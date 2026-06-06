@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
 import { AssemblyStep } from "../types";
 import { MOTORS_HOTSPOTS } from "../data";
+import { ASSEMBLY_STEPS_FR } from "../data_fr";
+import { ASSEMBLY_STEPS } from "../data";
+import { UI_TRANSLATIONS } from "../locales";
 import { generateAssemblyPDF } from "../utils/pdfGenerator";
 import { TorqueGuide } from "./TorqueGuide";
 import { 
@@ -27,10 +30,27 @@ interface Props {
   steps: AssemblyStep[];
   onTaskToggle: (stepId: string, taskId: string) => void;
   onUnlockBadge: (badgeId: string) => void;
+  lang: "en" | "fr";
 }
 
-export function AssemblyChecklist({ steps, onTaskToggle, onUnlockBadge }: Props) {
+export function AssemblyChecklist({ steps, onTaskToggle, onUnlockBadge, lang }: Props) {
   const [activeStepId, setActiveStepId] = useState<string>(steps[0].id);
+
+  const t = UI_TRANSLATIONS[lang];
+  const currentLangSteps = lang === "fr" ? ASSEMBLY_STEPS_FR : ASSEMBLY_STEPS;
+  const localizedSteps = currentLangSteps.map((localizedStep) => {
+    const parentStep = steps.find((s) => s.id === localizedStep.id) || localizedStep;
+    return {
+      ...localizedStep,
+      subtasks: localizedStep.subtasks.map((localizedSub) => {
+        const parentSub = parentStep.subtasks.find((sub) => sub.id === localizedSub.id);
+        return {
+          ...localizedSub,
+          done: parentSub ? parentSub.done : false
+        };
+      })
+    };
+  });
 
   // Exporter state
   const [showExporter, setShowExporter] = useState(false);
@@ -41,15 +61,15 @@ export function AssemblyChecklist({ steps, onTaskToggle, onUnlockBadge }: Props)
   const [isExporting, setIsExporting] = useState(false);
 
   // Calculate stats
-  const totalTasks = steps.reduce((sum, s) => sum + s.subtasks.length, 0);
-  const completedTasks = steps.reduce(
+  const totalTasks = localizedSteps.reduce((sum, s) => sum + s.subtasks.length, 0);
+  const completedTasks = localizedSteps.reduce(
     (sum, s) => sum + s.subtasks.filter((t) => t.done).length,
     0
   );
   
   const completionPercent = Math.round((completedTasks / totalTasks) * 100);
 
-  const activeStep = steps.find((s) => s.id === activeStepId) || steps[0];
+  const activeStep = localizedSteps.find((s) => s.id === activeStepId) || localizedSteps[0];
 
   const fireCelebrationConfetti = () => {
     // 1st wave left
@@ -418,14 +438,14 @@ export function AssemblyChecklist({ steps, onTaskToggle, onUnlockBadge }: Props)
 
 
       {/* Visual Guide to Torque Specs and Star Pattern tightening */}
-      <TorqueGuide />
+      <TorqueGuide lang={lang} />
 
       {/* Main split workbench layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Step Selector Left Rail */}
         <div className="lg:col-span-4 space-y-2.5">
           <span className="text-xs text-gray-500 font-mono tracking-widest block mb-2 uppercase">Mounting Stages</span>
-          {steps.map((step) => {
+          {localizedSteps.map((step) => {
             const stepCompletedCount = step.subtasks.filter((t) => t.done).length;
             const isStepAllDone = stepCompletedCount === step.subtasks.length;
             const isSelected = step.id === activeStepId;
