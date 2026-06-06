@@ -3,9 +3,10 @@ import { Achievement } from "../types";
 
 interface Props {
   achievements: Achievement[];
+  assemblyProgressPercent: number;
 }
 
-export function DashboardHeader({ achievements }: Props) {
+export function DashboardHeader({ achievements, assemblyProgressPercent }: Props) {
   const getIcon = (name: string, isUnlocked: boolean) => {
     const cls = `w-8 h-8 ${isUnlocked ? "scale-110 duration-500 text-amber-400" : "opacity-40 text-gray-500 animate-pulse"}`;
     switch (name) {
@@ -30,7 +31,7 @@ export function DashboardHeader({ achievements }: Props) {
   return (
     <div className="bg-[#111827] border border-[#374151] rounded-2xl p-6 md:p-8 shadow-xl max-w-7xl mx-auto mb-8 animate-fade-in">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        <div>
+        <div className="flex-1">
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="bg-amber-500/10 text-amber-400 border border-amber-500/30 font-mono text-xs px-2.5 py-1 rounded-full uppercase tracking-wider font-semibold">
               School Project Workbench [14-Year-Old Safe Setup]
@@ -48,38 +49,76 @@ export function DashboardHeader({ achievements }: Props) {
           </p>
         </div>
 
-        {/* Achievements Progress Circle */}
-        <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-4 flex items-center gap-5 w-full lg:w-auto min-w-[300px]">
-          <div className="relative flex items-center justify-center">
-            {/* Simple SVGCircle progress indicator */}
-            <svg className="w-16 h-16 transform -rotate-90">
-              <circle
-                cx="32"
-                cy="32"
-                r="28"
-                className="stroke-gray-800"
-                strokeWidth="4"
-                fill="transparent"
-              />
-              <circle
-                cx="32"
-                cy="32"
-                r="28"
-                className="stroke-amber-500 transition-all duration-1000 ease-out"
-                strokeWidth="4"
-                fill="transparent"
-                strokeDasharray={175}
-                strokeDashoffset={175 - (175 * progressPercent) / 100}
-              />
-            </svg>
-            <span className="absolute font-mono text-sm font-bold text-white">{progressPercent}%</span>
-          </div>
-          <div>
-            <div className="text-xs text-gray-400 uppercase tracking-widest font-mono">Workshop Badges</div>
-            <div className="text-lg font-bold text-white mb-1 flex items-center gap-1.5">
-              <Award className="w-5 h-5 text-amber-400" /> {unlockedCount} / {achievements.length} Unlocked
+        {/* Dynamic Dual Metrics Area */}
+        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto shrink-0 select-none">
+          {/* Achievements Progress Circle */}
+          <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-4 flex items-center gap-4 flex-1 sm:flex-initial min-w-[250px]">
+            <div className="relative flex items-center justify-center shrink-0">
+              {/* SVGCircle progress indicator */}
+              <svg className="w-14 h-14 transform -rotate-90">
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="24"
+                  className="stroke-gray-800"
+                  strokeWidth="4.5"
+                  fill="transparent"
+                />
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="24"
+                  className="stroke-amber-500 transition-all duration-1000 ease-out"
+                  strokeWidth="4.5"
+                  fill="transparent"
+                  strokeDasharray={151}
+                  strokeDashoffset={151 - (151 * progressPercent) / 100}
+                />
+              </svg>
+              <span className="absolute font-mono text-xs font-bold text-white">{progressPercent}%</span>
             </div>
-            <div className="text-xs text-gray-500">Explore intermediate tabs to earn badges</div>
+            <div>
+              <div className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">Workshop Badges</div>
+              <div className="text-base font-bold text-white mb-0.5 flex items-center gap-1.5">
+                <Award className="w-4 h-4 text-amber-400" /> {unlockedCount} / {achievements.length} Unlocked
+              </div>
+              <div className="text-[10px] text-gray-500">Earn badges inside tabs</div>
+            </div>
+          </div>
+
+          {/* Assembly Checklist Progress Circle */}
+          <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-4 flex items-center gap-4 flex-1 sm:flex-initial min-w-[250px]">
+            <div className="relative flex items-center justify-center shrink-0">
+              {/* SVGCircle progress indicator */}
+              <svg className="w-14 h-14 transform -rotate-90">
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="24"
+                  className="stroke-gray-800"
+                  strokeWidth="4.5"
+                  fill="transparent"
+                />
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="24"
+                  className="stroke-emerald-500 transition-all duration-1000 ease-out"
+                  strokeWidth="4.5"
+                  fill="transparent"
+                  strokeDasharray={151}
+                  strokeDashoffset={151 - (151 * assemblyProgressPercent) / 100}
+                />
+              </svg>
+              <span className="absolute font-mono text-xs font-bold text-white">{assemblyProgressPercent}%</span>
+            </div>
+            <div>
+              <div className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">Checklist Steps</div>
+              <div className="text-base font-bold text-white mb-0.5 flex items-center gap-1.5">
+                <ClipboardCheck className="w-4 h-4 text-emerald-400" /> {assemblyProgressPercent}% Complete
+              </div>
+              <div className="text-[10px] text-gray-500">Track build check stages</div>
+            </div>
           </div>
         </div>
       </div>

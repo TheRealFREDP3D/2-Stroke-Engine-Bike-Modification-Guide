@@ -44,6 +44,14 @@ export default function App() {
     });
   };
 
+  // Calculate overall assembly steps completion
+  const totalTasks = assemblySteps.reduce((sum, s) => sum + s.subtasks.length, 0);
+  const completedTasks = assemblySteps.reduce(
+    (sum, s) => sum + s.subtasks.filter((t) => t.done).length,
+    0
+  );
+  const assemblyProgressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
   return (
     <div className="min-h-screen bg-[#0b0f19] text-gray-100 flex flex-col selection:bg-amber-500 selection:text-black">
       
@@ -56,7 +64,7 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8 space-y-8">
         
         {/* Main Dashboard Badge Progress */}
-        <DashboardHeader achievements={achievements} />
+        <DashboardHeader achievements={achievements} assemblyProgressPercent={assemblyProgressPercent} />
 
         {/* Tab Selection Row */}
         <div className="flex border-b border-gray-800 overflow-x-auto gap-2 scrollbar-none pb-px">

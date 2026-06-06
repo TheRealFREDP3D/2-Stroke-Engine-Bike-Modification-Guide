@@ -24,9 +24,18 @@ export function EngineCycle({ stages, onUnlockBadge }: Props) {
   const [cycledIds, setCycledIds] = useState<string[]>([stages[0].id]);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [throttleVal, setThrottleVal] = useState<number>(1); // 1 = Idle, 2 = Cruising, 3 = Redline Maximum
-  const [tick, setTick] = useState<number>(0);
+  const [smoothAngle, setSmoothAngle] = useState<number>(0);
 
-  const activeStage = stages[activeStageIndex];
+  // Map each stage configuration to its natural physics cylinder degree
+  let baseDegrees = 0;
+  const currentStageId = stages[activeStageIndex]?.id;
+  if (currentStageId === "intake") {
+    baseDegrees = 330;
+  } else if (currentStageId === "power") {
+    baseDegrees = 60;
+  } else {
+    baseDegrees = 180;
+  }
 
   // Map throttle level to delay (ms) per stroke and virtual diagnostic RPM
   const getSimulatedTelemetry = () => {
@@ -44,36 +53,86 @@ export function EngineCycle({ stages, onUnlockBadge }: Props) {
 
   const { delay, rpm, sound } = getSimulatedTelemetry();
 
-  // Automated play cycle
+  // Map dynamic angular subdivisions directly to structural thermodynamic phases
+  const getStageFromAngle = (angle: number): number => {
+    const norm = ((angle % 360) + 360) % 360;
+    if (norm >= 270 || norm < 30) {
+      const idx = stages.findIndex((s) => s.id === "intake");
+      return idx !== -1 ? idx : 0;
+    } else if (norm >= 30 && norm < 150) {
+      const idx = stages.findIndex((s) => s.id === "power");
+      return idx !== -1 ? idx : 1;
+    } else {
+      const idx = stages.findIndex((s) => s.id !== "intake" && s.id !== "power");
+      return idx !== -1 ? idx : 2;
+    }
+  };
+
+  const computedStageIndex = isPlaying ? getStageFromAngle(smoothAngle) : activeStageIndex;
+  const activeStage = stages[computedStageIndex] || stages[0];
+
+  // Synchronize smoothAngle to baseDegrees if not playing
+  useEffect(() => {
+    if (!isPlaying) {
+      setSmoothAngle(baseDegrees);
+    }
+  }, [isPlaying, activeStageIndex, baseDegrees]);
+
+  // High-performance continuous animation loop (60 frames per second)
   useEffect(() => {
     if (!isPlaying) return;
 
-    const interval = setInterval(() => {
-      setTick((t) => t + 1);
+    let lastTime = performance.now();
+    let animationFrameId: number;
 
-      setActiveStageIndex((prevIdx) => {
-        const nextIdx = (prevIdx + 1) % stages.length;
-        const nextId = stages[nextIdx].id;
+    const tickFrame = (now: number) => {
+      const deltaMs = now - lastTime;
+      lastTime = now;
 
-        // Auto unlock badges if all stages are explored
-        setCycledIds((prev) => {
-          if (!prev.includes(nextId)) {
-            const updated = [...prev, nextId];
-            if (updated.length === stages.length) {
-              // Defer state update to bypass render phase lock
-              setTimeout(() => onUnlockBadge("badge_engine"), 45);
-            }
-            return updated;
-          }
-          return prev;
-        });
+      // Throttle 1 (Idle): 1 rev / 2.7 sec -> 360 / 2700 = 0.1333 deg/ms
+      // Throttle 2 (Cruise): 1 rev / 1.35 sec -> 360 / 1350 = 0.2667 deg/ms
+      // Throttle 3 (Redline): 1 rev / 0.6 sec -> 360 / 600 = 0.6 deg/ms
+      let degPerMs = 0.1333;
+      if (throttleVal === 2) {
+        degPerMs = 0.2667;
+      } else if (throttleVal === 3) {
+        degPerMs = 0.6;
+      }
 
-        return nextIdx;
-      });
-    }, delay);
+      setSmoothAngle((prevAngle) => prevAngle + degPerMs * deltaMs);
+      animationFrameId = requestAnimationFrame(tickFrame);
+    };
 
-    return () => clearInterval(interval);
-  }, [isPlaying, delay, stages, onUnlockBadge]);
+    animationFrameId = requestAnimationFrame(tickFrame);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isPlaying, throttleVal]);
+
+  // Sync computed index and unlock badges
+  useEffect(() => {
+    if (!isPlaying) return;
+    
+    const activeStageId = stages[computedStageIndex]?.id;
+    if (!activeStageId) return;
+
+    setCycledIds((prev) => {
+      if (!prev.includes(activeStageId)) {
+        const updated = [...prev, activeStageId];
+        if (updated.length === stages.length) {
+          setTimeout(() => onUnlockBadge("badge_engine"), 45);
+        }
+        return updated;
+      }
+      return prev;
+    });
+  }, [computedStageIndex, isPlaying, stages, onUnlockBadge]);
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      // Capture the current computed stage when pausing to avoid UI jumps
+      setActiveStageIndex(computedStageIndex);
+    }
+    setIsPlaying(!isPlaying);
+  };
 
   const handleNext = () => {
     setIsPlaying(false); // Pause auto playback
@@ -107,23 +166,7 @@ export function EngineCycle({ stages, onUnlockBadge }: Props) {
   const L = 38; // Connecting rod length in unit coordinate pixels
   const crankCenterY = 105;
 
-  // Map each stage configuration to its natural physics cylinder degree:
-  // - Intake & Compression: Piston moves up to compress the air/fuel charge (near Top Dead Center, ~330 degrees)
-  // - Ignition & Power: CDI sparks, sending the piston under massive fire pressure onwards (~60 degrees)
-  // - Exhaust & Scavenging: Expelling smoke at Bottom Dead Center (~180 degrees)
-  let baseDegrees = 0;
-  if (activeStage.id === "intake") {
-    baseDegrees = 330;
-  } else if (activeStage.id === "power") {
-    baseDegrees = 60;
-  } else {
-    // exhaust
-    baseDegrees = 180;
-  }
-
-  // Smooth angle continuous update when engine is running, or statically anchored when stepped manually
-  const crankAngle = baseDegrees + (isPlaying ? tick * 18 : 0);
-  const theta = (crankAngle * Math.PI) / 180;
+  const theta = (smoothAngle * Math.PI) / 180;
 
   // Slider-crank exact kinematics:
   // crank pin rotates around (50, 105)
@@ -143,8 +186,8 @@ export function EngineCycle({ stages, onUnlockBadge }: Props) {
   // Dynamic engine buzz vibration amplitude proportional to RPM
   const isVibrating = isPlaying;
   const vibrateIntensity = throttleVal === 3 ? 1.0 : throttleVal === 2 ? 0.6 : 0.3;
-  const jitterX = isVibrating ? (tick % 2 === 0 ? vibrateIntensity : -vibrateIntensity) : 0;
-  const jitterY = isVibrating ? (tick % 2 === 0 ? -vibrateIntensity * 0.7 : vibrateIntensity * 0.7) : 0;
+  const jitterX = isVibrating ? Math.sin(smoothAngle * 5) * vibrateIntensity : 0;
+  const jitterY = isVibrating ? Math.cos(smoothAngle * 5) * vibrateIntensity * 0.7 : 0;
 
   // On-screen sound visual effects label
   const getCycleFlashText = () => {
@@ -170,7 +213,7 @@ export function EngineCycle({ stages, onUnlockBadge }: Props) {
         <div className="flex items-center gap-2 bg-gray-950 p-1 rounded-xl border border-gray-800 self-start md:self-auto">
           <button
             id="play-engine-toggle"
-            onClick={() => setIsPlaying(!isPlaying)}
+            onClick={togglePlay}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
               isPlaying
                 ? "bg-rose-500 text-white hover:bg-rose-600 animate-pulse"
@@ -219,11 +262,11 @@ export function EngineCycle({ stages, onUnlockBadge }: Props) {
             <svg viewBox="0 0 100 120" className="w-full h-full" fill="none">
               
               {/* Outer cylinder cooling fins */}
-              <path d="M 25 15 L 20 15 M 25 25 L 18 25 M 25 35 L 15 35 M 25 45 L 15 45 M 25 55 L 18 55 M 25 65 L 20 65" stroke="#4b5563" strokeWidth="2.5" strokeLinecap="round" />
-              <path d="M 75 15 L 80 15 M 75 25 L 82 25 M 75 35 L 85 35 M 75 45 L 85 45 M 75 55 L 82 55 M 75 65 L 80 65" stroke="#4b5563" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M 25 15 L 20 15 M 25 25 L 18 25 M 25 35 L 15 35 M 25 45 L 15 45 M 25 55 L 18 55 M 25 65 L 20 65 M 25 75 L 21 75 M 25 85 L 22 85" stroke="#4b5563" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M 75 15 L 80 15 M 75 25 L 82 25 M 75 35 L 85 35 M 75 45 L 85 45 M 75 55 L 82 55 M 75 65 L 80 65 M 75 75 L 79 75 M 75 85 L 78 85" stroke="#4b5563" strokeWidth="2.5" strokeLinecap="round" />
 
-              {/* Engine cylinder wall casing */}
-              <rect x="25" y="10" width="50" height="80" rx="3" stroke="#9ca3af" strokeWidth="3" />
+              {/* Engine cylinder wall casing (extended to y=100 and left open at the bottom so the skeleton can expand) */}
+              <path d="M 25 100 L 25 13 A 3 3 0 0 1 28 10 L 72 10 A 3 3 0 0 1 75 13 L 75 100" stroke="#9ca3af" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
 
               {/* Spark Plug on top */}
               <rect x="45" y="0" width="10" height="10" fill="#374151" stroke="#9ca3af" strokeWidth="1" />
@@ -263,16 +306,16 @@ export function EngineCycle({ stages, onUnlockBadge }: Props) {
                 <rect x="19" y="55" width="8" height="10" className="fill-gray-950 stroke-gray-800" strokeWidth="1" />
               )}
 
-              {/* Combustion Fuel State Fill (Inside Cylinder) */}
+              {/* Combustion Fuel State Fill (Inside Cylinder - dynamically sized to follow the piston crown) */}
               {activeStage.id === "power" ? (
                 // Exploding hot orange flame
-                <rect x="27" y="12" width="46" height="30" className="fill-orange-600/30 stroke-red-500/20" />
+                <rect x="26.5" y="11.5" width="47" height={pistonY - 11.5} rx="1.5" className="fill-orange-600/30 stroke-red-500/10" />
               ) : activeStage.id === "intake" ? (
                 // Sucking blue pressurized cool charge
-                <rect x="27" y="12" width="46" height="20" className="fill-blue-600/20" />
+                <rect x="26.5" y="11.5" width="47" height={pistonY - 11.5} rx="1.5" className="fill-blue-600/20" />
               ) : (
                 // Evacuating smoky exhaust green
-                <rect x="27" y="12" width="46" height="42" className="fill-emerald-600/10" />
+                <rect x="26.5" y="11.5" width="47" height={pistonY - 11.5} rx="1.5" className="fill-emerald-600/10" />
               )}
 
               {/* Dynamic Piston & Realistic Connected Linkage */}

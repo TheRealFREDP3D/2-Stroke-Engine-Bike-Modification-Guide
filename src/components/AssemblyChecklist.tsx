@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import confetti from "canvas-confetti";
 import { AssemblyStep } from "../types";
 import { MOTORS_HOTSPOTS } from "../data";
 import { generateAssemblyPDF } from "../utils/pdfGenerator";
+import { TorqueGuide } from "./TorqueGuide";
 import { 
   CheckSquare, 
   Square, 
@@ -48,6 +50,49 @@ export function AssemblyChecklist({ steps, onTaskToggle, onUnlockBadge }: Props)
   const completionPercent = Math.round((completedTasks / totalTasks) * 100);
 
   const activeStep = steps.find((s) => s.id === activeStepId) || steps[0];
+
+  const fireCelebrationConfetti = () => {
+    // 1st wave left
+    confetti({
+      particleCount: 80,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.8 },
+      colors: ["#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#ffffff"],
+    });
+    // 1st wave right
+    confetti({
+      particleCount: 80,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.8 },
+      colors: ["#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#ffffff"],
+    });
+
+    // 2nd wave center (with small delay)
+    setTimeout(() => {
+      confetti({
+        particleCount: 100,
+        spread: 120,
+        origin: { y: 0.6 },
+        colors: ["#f59e0b", "#10b981", "#3b82f6", "#fa5252", "#ffffff"],
+      });
+    }, 300);
+  };
+
+  // Monitor checklist completions and trigger auto-confetti burst
+  useEffect(() => {
+    if (completionPercent === 100) {
+      const shownCelebrationBefore = sessionStorage.getItem("checklist_celebrated");
+      if (!shownCelebrationBefore) {
+        fireCelebrationConfetti();
+        sessionStorage.setItem("checklist_celebrated", "true");
+      }
+    } else {
+      // If a task is deselected, reset the flag to allow celebrated satisfaction once re-completed
+      sessionStorage.removeItem("checklist_celebrated");
+    }
+  }, [completionPercent]);
 
   const updateProjectName = (val: string) => {
     setProjectName(val);
@@ -372,6 +417,9 @@ export function AssemblyChecklist({ steps, onTaskToggle, onUnlockBadge }: Props)
       </div>
 
 
+      {/* Visual Guide to Torque Specs and Star Pattern tightening */}
+      <TorqueGuide />
+
       {/* Main split workbench layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Step Selector Left Rail */}
@@ -519,13 +567,23 @@ export function AssemblyChecklist({ steps, onTaskToggle, onUnlockBadge }: Props)
               </p>
             </div>
           </div>
-          <button
-            id="badge-claim-btn"
-            onClick={() => onUnlockBadge("badge_checklist")}
-            className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-mono text-xs font-bold rounded-lg uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-md shadow-emerald-500/10"
-          >
-            Claim Badge Code
-          </button>
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto shrink-0">
+            <button
+              id="confetti-celebration-btn"
+              onClick={fireCelebrationConfetti}
+              className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 border border-amber-400/20 text-black font-sans text-xs font-bold rounded-lg uppercase tracking-wider hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/15 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Celebrate Again
+            </button>
+            <button
+              id="badge-claim-btn"
+              onClick={() => onUnlockBadge("badge_checklist")}
+              className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-mono text-xs font-bold rounded-lg uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-md shadow-emerald-500/10 cursor-pointer"
+            >
+              Claim Badge Code
+            </button>
+          </div>
         </div>
       )}
     </div>
