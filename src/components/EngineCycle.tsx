@@ -102,18 +102,43 @@ export function EngineCycle({ stages, onUnlockBadge }: Props) {
     }
   };
 
-  // Mechanical Physics coordinates for dynamic piston linkage
-  const isUp = activeStage.pistonPosition === "up";
+  // Define Crank Radius and Connecting Rod Length for perfect, non-shifting visual alignment
+  const R = 13; // Crank radius in unit coordinate pixels
+  const L = 38; // Connecting rod length in unit coordinate pixels
+  const crankCenterY = 105;
 
-  // Compute rotation angle (3 stages = 120-degree step interval)
-  const crankAngle = activeStageIndex * 120 + (isPlaying ? (tick * 15) % 30 : 0);
+  // Map each stage configuration to its natural physics cylinder degree:
+  // - Intake & Compression: Piston moves up to compress the air/fuel charge (near Top Dead Center, ~330 degrees)
+  // - Ignition & Power: CDI sparks, sending the piston under massive fire pressure onwards (~60 degrees)
+  // - Exhaust & Scavenging: Expelling smoke at Bottom Dead Center (~180 degrees)
+  let baseDegrees = 0;
+  if (activeStage.id === "intake") {
+    baseDegrees = 330;
+  } else if (activeStage.id === "power") {
+    baseDegrees = 60;
+  } else {
+    // exhaust
+    baseDegrees = 180;
+  }
+
+  // Smooth angle continuous update when engine is running, or statically anchored when stepped manually
+  const crankAngle = baseDegrees + (isPlaying ? tick * 18 : 0);
   const theta = (crankAngle * Math.PI) / 180;
 
-  // Pivot centers for mechanical realism
+  // Slider-crank exact kinematics:
+  // crank pin rotates around (50, 105)
+  const crankPinX = 50 + R * Math.sin(theta);
+  const crankPinY = crankCenterY - R * Math.cos(theta);
+
+  // solve for wrist pin Y: distance squared = (crankPinX - wristPinX)^2 + (crankPinY - wristPinY)^2 = L^2
   const wristPinX = 50;
-  const wristPinY = isUp ? 50 : 76;
-  const crankPinX = 50 + Math.sin(theta) * 11;
-  const crankPinY = 105 - Math.cos(theta) * 11;
+  const wristPinY = crankPinY - Math.sqrt(L * L - Math.pow(crankPinX - 50, 2));
+
+  // Piston body coordinates anchored strictly relative to wrist pin
+  const pistonWidth = 46;
+  const pistonHeight = 35;
+  const pistonX = 27;
+  const pistonY = wristPinY - 18; // Keep centered with wrist pin
 
   // Dynamic engine buzz vibration amplitude proportional to RPM
   const isVibrating = isPlaying;
@@ -168,7 +193,7 @@ export function EngineCycle({ stages, onUnlockBadge }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         
         {/* Visual Engine Cross-section (Left 6 Columns) */}
-        <div className="lg:col-span-6 bg-[#0b0f19] border border-gray-800 rounded-xl p-6 flex flex-col items-center justify-center relative min-h-[420px] overflow-hidden">
+        <div className="lg:col-span-6 bg-[#0b0f19] border border-gray-800 rounded-xl p-6 flex flex-col items-center justify-start relative min-h-[420px] overflow-hidden">
           
           <div className="absolute top-3 left-3 bg-gray-900 border border-gray-800 px-3 py-1 rounded-full text-[10px] font-mono text-gray-400 z-10">
             ENGINE BLOCK CROSS-SECTION
@@ -251,23 +276,13 @@ export function EngineCycle({ stages, onUnlockBadge }: Props) {
               )}
 
               {/* Dynamic Piston & Realistic Connected Linkage */}
-              {isUp ? (
-                <g>
-                   {/* Piston Body */}
-                   <rect x="27" y="32" width="46" height="35" rx="3" fill="#4d5562" stroke="#d1d5db" strokeWidth="1.5" />
-                   {/* Piston head compression seals */}
-                   <line x1="28" y1="36" x2="72" y2="36" stroke="#1f2937" strokeWidth="1" />
-                   <line x1="28" y1="40" x2="72" y2="40" stroke="#1f2937" strokeWidth="1" />
-                </g>
-              ) : (
-                <g>
-                   {/* Piston Body Low */}
-                   <rect x="27" y="58" width="46" height="35" rx="3" fill="#4d5562" stroke="#d1d5db" strokeWidth="1.5" />
-                   {/* Piston head compression seals */}
-                   <line x1="28" y1="62" x2="72" y2="62" stroke="#1f2937" strokeWidth="1" />
-                   <line x1="28" y1="66" x2="72" y2="66" stroke="#1f2937" strokeWidth="1" />
-                </g>
-              )}
+              <g>
+                {/* Piston Body */}
+                <rect x={pistonX} y={pistonY} width={pistonWidth} height={pistonHeight} rx="3" fill="#4d5562" stroke="#d1d5db" strokeWidth="1.5" />
+                {/* Piston head compression seals */}
+                <line x1={pistonX + 1} y1={pistonY + 4} x2={pistonX + pistonWidth - 1} y2={pistonY + 4} stroke="#1f2937" strokeWidth="1" />
+                <line x1={pistonX + 1} y1={pistonY + 8} x2={pistonX + pistonWidth - 1} y2={pistonY + 8} stroke="#1f2937" strokeWidth="1" />
+              </g>
 
               {/* Golden Fire combustion thrust arrow pointing force downward */}
               {activeStage.id === "power" && (
@@ -300,14 +315,14 @@ export function EngineCycle({ stages, onUnlockBadge }: Props) {
               />
 
               {/* Round Flywheel Web */}
-              <circle cx="50" cy="105" r="14" fill="#111827" stroke="#4b5563" strokeWidth="1.5" strokeDasharray="3,2" />
+              <circle cx="50" cy={crankCenterY} r="14" fill="#111827" stroke="#4b5563" strokeWidth="1.5" strokeDasharray="3,2" />
               
               {/* Rotating crank heavy spacer pin */}
               <circle cx={crankPinX} cy={crankPinY} r="3" fill="#f59e0b" stroke="#000" strokeWidth="0.5" />
-              <line x1="50" y1="105" x2={crankPinX} y2={crankPinY} stroke="#f59e0b" strokeWidth="2.5" />
+              <line x1="50" y1={crankCenterY} x2={crankPinX} y2={crankPinY} stroke="#f59e0b" strokeWidth="2.5" />
 
               {/* Crank Axle Shaft center */}
-              <circle cx="50" cy="105" r="4.5" fill="#f59e0b" stroke="#4b5563" />
+              <circle cx="50" cy={crankCenterY} r="4.5" fill="#f59e0b" stroke="#4b5563" />
 
             </svg>
           </div>

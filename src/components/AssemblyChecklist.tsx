@@ -1,6 +1,25 @@
 import { useState } from "react";
 import { AssemblyStep } from "../types";
-import { CheckSquare, Square, Shield, Wrench, Sparkles, BookOpen, ChevronRight, Check } from "lucide-react";
+import { MOTORS_HOTSPOTS } from "../data";
+import { generateAssemblyPDF } from "../utils/pdfGenerator";
+import { 
+  CheckSquare, 
+  Square, 
+  Shield, 
+  Wrench, 
+  Sparkles, 
+  BookOpen, 
+  ChevronRight, 
+  Check,
+  FileText,
+  Printer,
+  Calendar,
+  User,
+  PenSquare,
+  ChevronDown,
+  ChevronUp,
+  Download
+} from "lucide-react";
 
 interface Props {
   steps: AssemblyStep[];
@@ -10,6 +29,14 @@ interface Props {
 
 export function AssemblyChecklist({ steps, onTaskToggle, onUnlockBadge }: Props) {
   const [activeStepId, setActiveStepId] = useState<string>(steps[0].id);
+
+  // Exporter state
+  const [showExporter, setShowExporter] = useState(false);
+  const [projectName, setProjectName] = useState(() => localStorage.getItem("motorized_project_name") || "Cruiser 2-Stroke Conversion");
+  const [builderName, setBuilderName] = useState(() => localStorage.getItem("motorized_builder_name") || "Student & Parent Team");
+  const [dateStr, setDateStr] = useState(() => localStorage.getItem("motorized_build_date") || new Date().toISOString().split("T")[0]);
+  const [fieldNotes, setFieldNotes] = useState(() => localStorage.getItem("motorized_field_notes") || "");
+  const [isExporting, setIsExporting] = useState(false);
 
   // Calculate stats
   const totalTasks = steps.reduce((sum, s) => sum + s.subtasks.length, 0);
@@ -21,6 +48,46 @@ export function AssemblyChecklist({ steps, onTaskToggle, onUnlockBadge }: Props)
   const completionPercent = Math.round((completedTasks / totalTasks) * 100);
 
   const activeStep = steps.find((s) => s.id === activeStepId) || steps[0];
+
+  const updateProjectName = (val: string) => {
+    setProjectName(val);
+    localStorage.setItem("motorized_project_name", val);
+  };
+  const updateBuilderName = (val: string) => {
+    setBuilderName(val);
+    localStorage.setItem("motorized_builder_name", val);
+  };
+  const updateDateStr = (val: string) => {
+    setDateStr(val);
+    localStorage.setItem("motorized_build_date", val);
+  };
+  const updateFieldNotes = (val: string) => {
+    setFieldNotes(val);
+    localStorage.setItem("motorized_field_notes", val);
+  };
+
+  const handleExportPDF = () => {
+    setIsExporting(true);
+    setTimeout(() => {
+      generateAssemblyPDF({
+        projectName,
+        builderName,
+        dateStr,
+        fieldNotes,
+        steps,
+        hotspots: MOTORS_HOTSPOTS,
+        completionPercent,
+        totalTasks,
+        completedTasks,
+      });
+      setIsExporting(false);
+    }, 1200);
+  };
+
+  const appendNotePreset = (presetText: string) => {
+    const updatedNotes = fieldNotes ? `${fieldNotes}\n- ${presetText}` : `- ${presetText}`;
+    updateFieldNotes(updatedNotes);
+  };
 
   const getDifficultyColor = (diff: string) => {
     switch (diff) {
@@ -65,6 +132,245 @@ export function AssemblyChecklist({ steps, onTaskToggle, onUnlockBadge }: Props)
           </div>
         </div>
       </div>
+
+      {/* PDF Documentation & Print Export Center */}
+      <div className="mb-8 bg-gray-900/40 border border-gray-800/80 rounded-2xl p-4 md:p-5 transition-all duration-300">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <span className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500">
+              <FileText className="w-5 h-5" />
+            </span>
+            <div>
+              <h3 className="text-sm md:text-base font-sans font-bold text-white flex items-center gap-2">
+                Project Report & PDF Documentation Exporter
+                <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full font-mono font-medium">
+                  PDF Export
+                </span>
+              </h3>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Generate and download a certified laboratory report of your build and safety checklist for sign-off.
+              </p>
+            </div>
+          </div>
+          
+          <button
+            id="toggle-pdf-center-btn"
+            onClick={() => setShowExporter(!showExporter)}
+            className="px-4 py-2 bg-gray-850 hover:bg-gray-800 border border-gray-700 hover:border-gray-600 text-xs text-gray-200 font-sans font-bold uppercase tracking-wider rounded-lg flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95"
+          >
+            {showExporter ? (
+              <>
+                <ChevronUp className="w-4 h-4 text-amber-400" />
+                Hide Control Panel
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-4 h-4 text-amber-500" />
+                Configure PDF Report ({completionPercent}% Ready)
+              </>
+            )}
+          </button>
+        </div>
+
+        {showExporter && (
+          <div className="mt-6 pt-5 border-t border-gray-800/80 grid grid-cols-1 md:grid-cols-12 gap-6 animate-fade-in">
+            {/* Form Fields Left (7 cols) */}
+            <div className="md:col-span-7 space-y-4">
+              <h4 className="text-xs text-gray-500 font-mono tracking-widest uppercase mb-1">
+                Report Metadata Settings
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Project Name Field */}
+                <div>
+                  <label className="text-[10px] text-gray-400 font-mono font-bold uppercase tracking-wider block mb-1.5">
+                    Scientific Project Name
+                  </label>
+                  <div className="relative">
+                    <Wrench className="absolute left-3 top-2.5 w-4 h-4 text-gray-600" />
+                    <input
+                      id="pdf-project-name-input"
+                      type="text"
+                      className="w-full bg-gray-950 border border-gray-800 focus:border-amber-500/70 focus:ring-1 focus:ring-amber-500/30 rounded-xl py-2 pl-9 pr-3 text-xs text-gray-100 placeholder-gray-600 font-sans outline-none transition-all"
+                      placeholder="e.g. Cruiser 2-Stroke Conversion"
+                      value={projectName}
+                      onChange={(e) => updateProjectName(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Lead Builder(s) Field */}
+                <div>
+                  <label className="text-[10px] text-gray-400 font-mono font-bold uppercase tracking-wider block mb-1.5">
+                    Lead Builders / Team Names
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-2.5 w-4 h-4 text-gray-600" />
+                    <input
+                      id="pdf-builder-name-input"
+                      type="text"
+                      className="w-full bg-gray-950 border border-gray-800 focus:border-amber-500/70 focus:ring-1 focus:ring-amber-500/30 rounded-xl py-2 pl-9 pr-3 text-xs text-gray-100 placeholder-gray-600 font-sans outline-none transition-all"
+                      placeholder="e.g. Student & Parent"
+                      value={builderName}
+                      onChange={(e) => updateBuilderName(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Build Log Date Field */}
+              <div>
+                <label className="text-[10px] text-gray-400 font-mono font-bold uppercase tracking-wider block mb-1.5">
+                  Compilation / Logging Date
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-600" />
+                  <input
+                    id="pdf-date-input"
+                    type="date"
+                    className="w-full bg-gray-950 border border-gray-800 focus:border-amber-500/70 focus:ring-1 focus:ring-amber-500/30 rounded-xl py-2 pl-9 pr-3 text-xs text-gray-100 placeholder-gray-600 font-mono outline-none transition-all"
+                    value={dateStr}
+                    onChange={(e) => updateDateStr(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Journal Notes Field */}
+              <div>
+                <label className="text-[10px] text-gray-400 font-mono font-bold uppercase tracking-wider block mb-1.5">
+                  Builder's Field Notes & Safety Observations
+                </label>
+                <div className="relative">
+                  <PenSquare className="absolute left-3 top-3 w-4 h-4 text-gray-600" />
+                  <textarea
+                    id="pdf-field-notes-textarea"
+                    rows={4}
+                    className="w-full bg-gray-950 border border-gray-800 focus:border-amber-500/70 focus:ring-1 focus:ring-amber-500/30 rounded-xl py-2.5 pl-9 pr-3 text-xs text-gray-200 placeholder-gray-650 font-sans outline-none transition-all resize-none leading-relaxed"
+                    placeholder="Describe custom tolerances, engine heat shims, spark gaps, compression fits or personal lessons learned in this motorized project..."
+                    value={fieldNotes}
+                    onChange={(e) => updateFieldNotes(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Quick Preset Buttons */}
+              <div className="space-y-1.5">
+                <span className="text-[9px] text-gray-500 font-mono uppercase tracking-widest block">
+                  Click to Insert Quick Journal presets:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    id="preset-btn-sprocket"
+                    onClick={() => appendNotePreset("Adjusted all 9 sprocket bolts in cross-star progression; checked alignment with radial runout indicators, zero off-center wiggle.")}
+                    className="text-[10px] px-2.5 py-1.5 bg-gray-900 border border-gray-800 text-gray-300 hover:text-white rounded-lg transition-all cursor-pointer active:scale-95 hover:bg-gray-850"
+                  >
+                    🔍 Sprocket Tune
+                  </button>
+                  <button
+                    type="button"
+                    id="preset-btn-fuel"
+                    onClick={() => appendNotePreset("Accurately mixed synthetic 2-cycle lubricant with regular gas at a pristine 40:1 break-in ratio to prevent mechanical lockup.")}
+                    className="text-[10px] px-2.5 py-1.5 bg-gray-900 border border-gray-800 text-gray-300 hover:text-white rounded-lg transition-all cursor-pointer active:scale-95 hover:bg-gray-850"
+                  >
+                    🧪 Gas/Oil ratio
+                  </button>
+                  <button
+                    type="button"
+                    id="preset-btn-resonance"
+                    onClick={() => appendNotePreset("Sealed the V-frame metal mounts with rubber damping templates to prevent body damage and decouple high-RPM harmonics.")}
+                    className="text-[10px] px-2.5 py-1.5 bg-gray-900 border border-gray-800 text-gray-300 hover:text-white rounded-lg transition-all cursor-pointer active:scale-95 hover:bg-gray-850"
+                  >
+                    🔒 Frame Mounts
+                  </button>
+                  <button
+                    type="button"
+                    id="preset-btn-chain"
+                    onClick={() => appendNotePreset("Tightened roller tensioner plate and verified chain sag holds snugly at precisely 1/2 inch under push testing.")}
+                    className="text-[10px] px-2.5 py-1.5 bg-gray-900 border border-gray-800 text-gray-300 hover:text-white rounded-lg transition-all cursor-pointer active:scale-95 hover:bg-gray-850"
+                  >
+                    ⚙️ Chain Tension
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Document Preview & triggers Right (5 cols) */}
+            <div className="md:col-span-5 bg-gray-950 border border-gray-800 rounded-xl p-4 flex flex-col justify-between">
+              <div>
+                <h4 className="text-[10px] text-gray-500 font-mono tracking-widest uppercase mb-3 text-center">
+                  Live Report Layout Sheet
+                </h4>
+                
+                {/* Schematic representation of 2-page document */}
+                <div className="space-y-3">
+                  {/* Page 1 Mini Mock */}
+                  <div className="bg-gray-900 rounded-lg p-2.5 border border-gray-850 flex items-center justify-between text-[10px]">
+                    <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                      <span className="text-gray-300 font-mono">Page 1: Project Profile & Hotspots</span>
+                    </div>
+                    <span className="text-gray-500 font-mono">Page 1</span>
+                  </div>
+
+                  {/* Page 2 Mini Mock */}
+                  <div className="bg-gray-900 rounded-lg p-2.5 border border-gray-850 flex items-center justify-between text-[10px]">
+                    <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span className="text-gray-300 font-mono">Page 2: Checklist Logs & Sign-offs</span>
+                    </div>
+                    <span className="text-gray-500 font-mono">Page 2</span>
+                  </div>
+
+                  {/* Interactive status meter */}
+                  <div className="mt-4 border-t border-gray-900 pt-3 space-y-1.5 text-[11px] text-gray-400">
+                    <div className="flex justify-between items-center">
+                      <span>Verified Checkpoints:</span>
+                      <span className="font-mono text-gray-200">{completedTasks} / {totalTasks} items</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Safety Precautions:</span>
+                      <span className="font-mono text-emerald-400 font-semibold">6 System Checks Ready</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Certification Sign-off:</span>
+                      <span className="font-mono text-cyan-400">Double Signature Panel</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Export Button */}
+              <div className="mt-6 pt-4 border-t border-gray-900">
+                <button
+                  type="button"
+                  id="pdf-download-action-btn"
+                  onClick={handleExportPDF}
+                  disabled={isExporting}
+                  className={`w-full py-3 bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 text-white font-sans font-bold uppercase tracking-wider text-xs rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10 cursor-pointer transition-all active:scale-[0.98] ${
+                    isExporting ? "opacity-80 pointer-events-none brightness-90" : "hover:brightness-110"
+                  }`}
+                >
+                  {isExporting ? (
+                    <>
+                      <Printer className="w-4 h-4 animate-spin text-white" />
+                      Formatting Documentation...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      Export Printable PDF Summary
+                    </>
+                  )}
+                </button>
+                <span className="text-[9px] text-gray-500 font-mono text-center block mt-2 leading-relaxed">
+                  Generates an A4 PDF complete with branding metadata, safety protocols, logged assembly steps, and adult advisor sign-off blocks.
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
 
       {/* Main split workbench layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
