@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
 import { Hotspot } from "../types";
+import { UI_TRANSLATIONS } from "../locales";
 import {
   ShieldCheck,
   Info,
@@ -19,6 +20,7 @@ import {
 interface Props {
   hotspots: Hotspot[];
   onUnlockBadge: (badgeId: string) => void;
+  lang: "en" | "fr";
 }
 
 // Define the 3 coordinate mappings for dynamic spatial realignment based on perspective
@@ -59,7 +61,16 @@ const targetTorques: Record<string, { target: number; tolerance: number; descrip
   kill_switch: { target: 4.5, tolerance: 0.8, description: "Light hinge tension to allow override shifting under extreme impact." }
 };
 
-export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
+const targetTorquesFr: Record<string, string> = {
+  brakes: "Serrage standard de sécurité pour les étriers de frein de fourche.",
+  sprocket: "Serrage croisé des rayons pour la roue arrière. Ne pliez pas les rayons.",
+  engine_mount: "Bride en V pour surmonter l'intense vibration harmonique du vilebrequin.",
+  chain_tensioner: "Bride à vis d'arrêt pour empêcher le galet tendeur de pivoter dans les rayons.",
+  fuel_tank: "Seuil de serrage modéré pour enrayer le cisaillement des filets en aluminium.",
+  kill_switch: "Serrage de charnière modéré facilitant les ajustements de guidon lors de chocs."
+};
+
+export function BikeHotspots({ hotspots, onUnlockBadge, lang }: Props) {
   const [selectedId, setSelectedId] = useState<string>("brakes");
   const [visitedIds, setVisitedIds] = useState<string[]>(["brakes"]);
   const [activePerspective, setActivePerspective] = useState<"profile" | "top" | "cross_section">("profile");
@@ -70,7 +81,13 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
   const [showToleranceHelper, setShowToleranceHelper] = useState(true);
 
   const selectedHotspot = hotspots.find((h) => h.id === selectedId) || hotspots[0];
-  const targetSpec = targetTorques[selectedId] || { target: 10, tolerance: 1, description: "" };
+  const targetSpecRaw = targetTorques[selectedId] || { target: 10, tolerance: 1, description: "" };
+  const targetSpec = {
+    ...targetSpecRaw,
+    description: lang === "fr" ? (targetTorquesFr[selectedId] || targetSpecRaw.description) : targetSpecRaw.description
+  };
+
+  const t = UI_TRANSLATIONS[lang];
 
   // Sync slider value when active selected node shifts
   useEffect(() => {
@@ -371,10 +388,10 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
         <div>
           <h2 className="text-xl md:text-2xl font-sans font-bold text-white flex items-center gap-2">
             <ShieldCheck className="w-6 h-6 text-emerald-400" />
-            Interactive 3D Chassis Safety Inspection
+            {t.hotspots_title}
           </h2>
           <p className="text-xs text-gray-400 mt-1">
-            Pivot perspectives, select critical physical nodes, and calibrate mechanical coupling torque limits.
+            {t.hotspots_subtitle}
           </p>
         </div>
 
@@ -384,9 +401,11 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
             <Gauge className="w-4 h-4" />
           </span>
           <div>
-            <div className="text-[9px] text-gray-500 uppercase tracking-widest font-mono">TORQUE COUPLINGS</div>
+            <div className="text-[9px] text-gray-500 uppercase tracking-widest font-mono">
+              {lang === "fr" ? "COUPLES DE SERRAGE" : "TORQUE COUPLINGS"}
+            </div>
             <div className="text-xs font-bold text-white">
-              {totalCalibratedCount} / {hotspots.length} Calibrated
+              {totalCalibratedCount} / {hotspots.length} {lang === "fr" ? "Calibrés" : "Calibrated"}
             </div>
           </div>
         </div>
@@ -408,7 +427,7 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
               }`}
             >
               <Compass className="w-3 h-3" />
-              Left Profile
+              {lang === "fr" ? "Profil Gauche" : "Left Profile"}
             </button>
             <button
               onClick={() => changePerspective("top")}
@@ -419,7 +438,7 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
               }`}
             >
               <Activity className="w-3 h-3" />
-              Top down Alignment
+              {lang === "fr" ? "Alignement Supérieur" : "Top down Alignment"}
             </button>
             <button
               onClick={() => changePerspective("cross_section")}
@@ -430,13 +449,13 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
               }`}
             >
               <Eye className="w-3 h-3" />
-              Cylinder X-Ray
+              {lang === "fr" ? "Rayons X Cylindre" : "Cylinder X-Ray"}
             </button>
           </div>
 
           <div className="absolute top-3 right-3 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 text-[10px] font-mono text-amber-400 rounded-full z-20 flex items-center gap-1">
             <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></span>
-            Audited Checks: {visitedIds.length} / {hotspots.length}
+            {lang === "fr" ? "Contrôles Visités" : "Audited Checks"}: {visitedIds.length} / {hotspots.length}
           </div>
 
           {/* Render Active SVG perspective */}
@@ -499,12 +518,12 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
           <div className="w-full text-center py-2 px-4 bg-gray-950/40 border-t border-gray-900/60 flex items-center justify-between text-[11px] font-mono text-gray-400 mt-auto">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              Perspective: <strong className="text-gray-200 uppercase">{activePerspective.replace("_", " ")}</strong>
+              {lang === "fr" ? "Perspective :" : "Perspective:"} <strong className="text-gray-200 uppercase">{activePerspective.replace("_", " ")}</strong>
             </span>
             <span className="text-gray-500">
               {totalCalibratedCount === hotspots.length
-                ? "🏆 ALL NODES CALIBRATED PERFECTLY!"
-                : `${hotspots.length - totalCalibratedCount} coupling torque checks remain`}
+                ? (lang === "fr" ? "🏆 TOUS LES POINTS SONT CALIBRÉS !" : "🏆 ALL NODES CALIBRATED PERFECTLY!")
+                : (lang === "fr" ? `Il reste ${hotspots.length - totalCalibratedCount} couples à valider` : `${hotspots.length - totalCalibratedCount} coupling torque checks remain`)}
             </span>
           </div>
         </div>
@@ -515,13 +534,13 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
             <div className="flex justify-between items-start gap-4">
               <div>
                 <span
-                  className={`text-[9px] font-mono font-bold tracking-widest px-2 py-0.5 rounded-full border ${
+                  className={`text-[9.5px] font-mono font-bold tracking-widest px-2.5 py-0.5 rounded-full border ${
                     selectedHotspot.importance === "CRITICAL"
                       ? "bg-rose-600/10 text-rose-400 border-rose-500/20"
                       : "bg-amber-600/10 text-amber-400 border-amber-500/20"
                   }`}
                 >
-                  {selectedHotspot.importance} INSPECT NODE
+                  {selectedHotspot.importance} {lang === "fr" ? "INSPECTION DU POINT" : "INSPECT NODE"}
                 </span>
                 <h3 className="text-lg font-bold text-white mt-1.5 leading-tight">
                   {selectedHotspot.name}
@@ -533,7 +552,7 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
             <div className="bg-gray-950/40 border border-gray-900 rounded-xl p-3 space-y-2">
               <h4 className="text-[10px] text-rose-400 font-bold font-mono tracking-wider flex items-center gap-1.5 uppercase">
                 <AlertOctagon className="w-3.5 h-3.5" />
-                The Danger Scenario
+                {lang === "fr" ? "Le Scénario de Danger" : "The Danger Scenario"}
               </h4>
               <p className="text-xs text-gray-300 leading-relaxed">
                 {selectedHotspot.description}
@@ -546,7 +565,9 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
                 <ShieldCheck className="w-4 h-4" />
               </span>
               <div>
-                <h4 className="text-xs font-bold text-white tracking-wide">Workshop Safety Protocol</h4>
+                <h4 className="text-xs font-bold text-white tracking-wide">
+                  {lang === "fr" ? "Protocole de Sécurité d'Atelier" : "Workshop Safety Protocol"}
+                </h4>
                 <p className="text-xs text-gray-400 mt-1 leading-relaxed">
                   {selectedHotspot.safetyProtocol}
                 </p>
@@ -559,7 +580,9 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
                 <Info className="w-4 h-4" />
               </span>
               <div>
-                <h4 className="text-xs font-bold text-white tracking-wide">Student Mechanical Physics Note</h4>
+                <h4 className="text-xs font-bold text-white tracking-wide">
+                  {lang === "fr" ? "Note Scientifique & Mécanique" : "Student Mechanical Physics Note"}
+                </h4>
                 <p className="text-xs text-gray-400 mt-1 leading-relaxed font-mono">
                   {selectedHotspot.mechanicNote}
                 </p>
@@ -571,17 +594,17 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-white flex items-center gap-1.5 uppercase font-sans tracking-wide">
                   <Wrench className="w-3.5 h-3.5 text-amber-500" />
-                  Coupling Torque calibrator
+                  {lang === "fr" ? "Calibrage du Couple de Fixation" : "Coupling Torque calibrator"}
                 </h4>
                 <span className="text-[10px] text-gray-500 font-mono">
-                  TARGET: <strong className="text-amber-400">{targetSpec.target} Nm</strong> (±{targetSpec.tolerance})
+                  {lang === "fr" ? "CIBLE" : "TARGET"} : <strong className="text-amber-400">{targetSpec.target} Nm</strong> (±{targetSpec.tolerance})
                 </span>
               </div>
 
               {/* Slider tuner graphic representation */}
               <div className="bg-gray-950/80 border border-gray-850 p-3.5 rounded-xl space-y-3.5">
                 <div className="flex justify-between items-center text-xs font-mono">
-                  <span className="text-gray-500">Tightness:</span>
+                  <span className="text-gray-500">{lang === "fr" ? "Tension Actuelle :" : "Tightness:"}</span>
                   <span className={`font-bold ${
                     Math.abs(sliderValue - targetSpec.target) <= targetSpec.tolerance
                       ? "text-emerald-400"
@@ -620,7 +643,7 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
                 </div>
 
                 <div className="flex justify-between text-[9px] font-mono text-gray-500">
-                  <span>0.0 Nm (Loose)</span>
+                  <span>{lang === "fr" ? "0.0 Nm (Desserré)" : "0.0 Nm (Loose)"}</span>
                   <span>15.0 Nm</span>
                   <span>30.0 Nm (Max)</span>
                 </div>
@@ -637,7 +660,9 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
                     }`}
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
-                    {isCurrentCalibrated ? "Calibrated ✓ Lock Tension" : "Lock In Spec Tension"}
+                    {isCurrentCalibrated 
+                      ? (lang === "fr" ? "Calibré ✓ Serrage Verrouillé" : "Calibrated ✓ Lock Tension") 
+                      : (lang === "fr" ? "Verrouiller le serrage cible" : "Lock In Spec Tension")}
                   </button>
                 </div>
               </div>
@@ -647,7 +672,7 @@ export function BikeHotspots({ hotspots, onUnlockBadge }: Props) {
           <div className="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-xs text-gray-500">
             <span className="flex items-center gap-1.5">
               <CheckCircle className={`w-3.5 h-3.5 ${isCurrentCalibrated ? "text-emerald-500" : "text-gray-750"}`} />
-              Calibration audit: {isCurrentCalibrated ? "COMPLETE" : "PENDING LIMITS"}
+              {lang === "fr" ? "Audit de tension :" : "Calibration audit:"} {isCurrentCalibrated ? (lang === "fr" ? "CONFORME ✓" : "COMPLETE") : (lang === "fr" ? "NON SERRÉ" : "PENDING LIMITS")}
             </span>
             <span className="font-mono text-[9px] text-gray-600">ID: {selectedHotspot.id.toUpperCase()}_CLAMP_CHECK</span>
           </div>
