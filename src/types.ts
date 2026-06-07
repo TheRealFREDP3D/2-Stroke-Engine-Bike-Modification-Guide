@@ -1,14 +1,3 @@
-export interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: string;
-  image?: {
-    data: string; // base64 representation
-    mimeType: string;
-  };
-}
-
 export interface Hotspot {
   id: string;
   name: string;
@@ -76,4 +65,3 @@ export interface VideoGuide {
   mechanicConcept: string;
   chapters: VideoChapter[];
 }
-

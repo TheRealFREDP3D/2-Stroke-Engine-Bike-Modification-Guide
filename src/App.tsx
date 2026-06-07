@@ -5,13 +5,12 @@ import { BikeHotspots } from "./components/BikeHotspots";
 import { EngineCycle } from "./components/EngineCycle";
 import { AssemblyChecklist } from "./components/AssemblyChecklist";
 import { SafetyQuiz } from "./components/SafetyQuiz";
-import { SolderChat } from "./components/SolderChat";
 import { VideoTutorials } from "./components/VideoTutorials";
-import { ShieldAlert, Flame, Wrench, GraduationCap, ShieldCheck, Video, MessageSquare } from "lucide-react";
+import { ShieldAlert, Flame, Wrench, GraduationCap, ShieldCheck, Video } from "lucide-react";
 import { AssemblyStep, Achievement } from "./types";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<"hotspots" | "engine" | "checklist" | "video" | "quiz" | "chat">("hotspots");
+  const [activeTab, setActiveTab] = useState<"hotspots" | "engine" | "checklist" | "video" | "quiz">("hotspots");
   const [achievements, setAchievements] = useState<Achievement[]>(WORKSHOP_ACHIEVEMENTS);
   const [assemblySteps, setAssemblySteps] = useState<AssemblyStep[]>(ASSEMBLY_STEPS);
 
@@ -132,19 +131,6 @@ export default function App() {
             <GraduationCap className="w-4 h-4" />
             Stage 5: Builder Safety Quiz
           </button>
-
-          <button
-            id="tab-chat"
-            onClick={() => setActiveTab("chat")}
-            className={`py-3.5 px-5 text-xs md:text-sm font-sans font-bold uppercase tracking-wider flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === "chat"
-                ? "border-amber-500 text-amber-500 bg-amber-500/5 rounded-t-xl"
-                : "border-transparent text-gray-400 hover:text-white"
-            }`}
-          >
-            <MessageSquare className="w-4 h-4" />
-            Stage 6: Ask Sparky Co-Pilot
-          </button>
         </div>
 
         {/* Tab Contents */}
@@ -174,10 +160,6 @@ export default function App() {
 
           {activeTab === "quiz" && (
             <SafetyQuiz questions={SAFETY_QUIZ} onUnlockBadge={handleUnlockBadge} />
-          )}
-
-          {activeTab === "chat" && (
-            <SolderChat onUnlockBadge={handleUnlockBadge} />
           )}
         </div>
 

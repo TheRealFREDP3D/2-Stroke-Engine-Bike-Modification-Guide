@@ -1,6 +1,0 @@
-{
-  "name": "Motorized Bike Builder Guide",
-  "description": "An interactive mechanic guide and safety workshop for building a motorized mountain bike.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
