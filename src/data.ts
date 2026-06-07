@@ -280,9 +280,9 @@ export const ASSEMBLY_STEPS: AssemblyStep[] = [
     difficulty: "Easy",
     mechanicConcept: "Structural Health: Inspect the frame for weld cracks, especially near the bottom bracket. Motorized vibrations find metal weaknesses fast!",
     subtasks: [
-      { id: "s1-1", text: "Scrub the bike frame V-triangle clean of all grease and dirt so clamps grip tight.", done: false },
-      { id: "s1-2", text: "Verify both hand brakes are responsive and pad rubber has plenty of thickness.", done: false },
-      { id: "s1-3", text: "Confirm standard rear wheel spokes are stout (gently squeeze them to check they aren't loose).", done: false }
+      { id: "s1-1", text: "Scrub the bike frame V-triangle clean of all grease and dirt so clamps grip tight.", done: false, tools: ["rag", "degreaser"] },
+      { id: "s1-2", text: "Verify both hand brakes are responsive and pad rubber has plenty of thickness.", done: false, tools: ["safety_glasses", "wrench_10mm"] },
+      { id: "s1-3", text: "Confirm standard rear wheel spokes are stout (gently squeeze them to check they aren't loose).", done: false, tools: ["spoke_wrench", "wrench_12mm"] }
     ]
   },
   {
@@ -294,9 +294,9 @@ export const ASSEMBLY_STEPS: AssemblyStep[] = [
     difficulty: "Supervised",
     mechanicConcept: "Torque Distribution: Tightening standard clamps too much can warp fragile aluminum tubes. Tighten snug, then add 'Blue Threadlocker' to keep nuts from backing out.",
     subtasks: [
-      { id: "s2-1", text: "Dry-fit the engine to verify it clears your pedals, spark plug head, and exhaust.", done: false },
-      { id: "s2-2", text: "Place thin sheet-rubber strips on frame tubes where clamps touch to stifle buzz vibration.", done: false },
-      { id: "s2-3", text: "Bolted and torqued the front and rear mounts in small steps to prevent binding.", done: false }
+      { id: "s2-1", text: "Dry-fit the engine to verify it clears your pedals, spark plug head, and exhaust.", done: false, tools: ["safety_glasses", "allen_keys"] },
+      { id: "s2-2", text: "Place thin sheet-rubber strips on frame tubes where clamps touch to stifle buzz vibration.", done: false, tools: ["scissors", "rubber_shims"] },
+      { id: "s2-3", text: "Bolted and torqued the front and rear mounts in small steps to prevent binding.", done: false, tools: ["torque_wrench", "wrench_10mm", "threadlocker"] }
     ]
   },
   {
@@ -308,10 +308,10 @@ export const ASSEMBLY_STEPS: AssemblyStep[] = [
     difficulty: "Challenging",
     mechanicConcept: "Coefficient of Friction: Chain stretch and cog alignment. A misaligned chain converts valuable drive power into rubbing heat, breaking links in seconds.",
     subtasks: [
-      { id: "s3-1", text: "Clean spoke wires, then install both rubber rags concentric around the rear wheel hub.", done: false },
-      { id: "s3-2", text: "Assemble 9 spokes backing plates and tighten the hex bolts in a cross pattern (Star Sequence).", done: false },
-      { id: "s3-3", text: "Route the drive chain, adjust link count using a chain breaker tool, and install the Master Link.", done: false },
-      { id: "s3-4", text: "Double-bolt the drive tensioner wheel pulley and test-spin to secure 1/2 inch of vertical sag.", done: false }
+      { id: "s3-1", text: "Clean spoke wires, then install both rubber rags concentric around the rear wheel hub.", done: false, tools: ["degreaser", "rag"] },
+      { id: "s3-2", text: "Assemble 9 spokes backing plates and tighten the hex bolts in a cross pattern (Star Sequence).", done: false, tools: ["wrench_10mm", "wrench_12mm", "torque_wrench"] },
+      { id: "s3-3", text: "Route the drive chain, adjust link count using a chain breaker tool, and install the Master Link.", done: false, tools: ["chain_breaker", "pliers", "safety_glasses"] },
+      { id: "s3-4", text: "Double-bolt the drive tensioner wheel pulley and test-spin to secure 1/2 inch of vertical sag.", done: false, tools: ["wrench_14mm", "wrench_10mm", "threadlocker"] }
     ]
   },
   {
@@ -323,10 +323,10 @@ export const ASSEMBLY_STEPS: AssemblyStep[] = [
     difficulty: "Challenging",
     mechanicConcept: "Atmospheric Pressure & Spark Splicing: Cap relative vacuum. Kill switch redirects current wire to grounding chassis, snuffing spark plug potential instantly.",
     subtasks: [
-      { id: "s4-1", text: "Strap the gasoline tank to the main top tube using the kit's padded steel brackets.", done: false },
-      { id: "s4-2", text: "Lock the fuel valve/petcock tight, slide clear hoses through a fuel filter, and snap onto carburetor inlet.", done: false },
-      { id: "s4-3", text: "Mount throttle twist-grip, clutch lever and CDI kill-switch button directly on handbar slots.", done: false },
-      { id: "s4-4", text: "Connect kill switch wires using insulated connectors, taped well against splashing rain.", done: false }
+      { id: "s4-1", text: "Strap the gasoline tank to the main top tube using the kit's padded steel brackets.", done: false, tools: ["wrench_10mm", "screwdriver"] },
+      { id: "s4-2", text: "Lock the fuel valve/petcock tight, slide clear hoses through a fuel filter, and snap onto carburetor inlet.", done: false, tools: ["pliers", "scissors"] },
+      { id: "s4-3", text: "Mount throttle twist-grip, clutch lever and CDI kill-switch button directly on handbar slots.", done: false, tools: ["allen_keys", "screwdriver"] },
+      { id: "s4-4", text: "Connect kill switch wires using insulated connectors, taped well against splashing rain.", done: false, tools: ["electrical_tape", "pliers"] }
     ]
   },
   {
@@ -338,10 +338,10 @@ export const ASSEMBLY_STEPS: AssemblyStep[] = [
     difficulty: "Supervised",
     mechanicConcept: "Viscosity Index & Friction Coefficient: 2-stroke oil thickens gasoline, protecting sliding cylinders. Clutch tuning balances lock-load and spring pressure.",
     subtasks: [
-      { id: "s5-1", text: "Mix 2-Stroke Synthetic Motor Oil and Regular Gas inside a dedicated gas container (strictly outdoor).", done: false },
-      { id: "s5-2", text: "Adjust the carburetor throttle needle play so cable slides open and snaps closed like a spring.", done: false },
-      { id: "s5-3", text: "Tune the flower clutch nut on the gears to ensure standard bike pedaling works with lever pulled.", done: false },
-      { id: "s5-4", text: "Perform a dry-run push test with spark plug out: verify the piston fires back-and-forth smoothly.", done: false }
+      { id: "s5-1", text: "Mix 2-Stroke Synthetic Motor Oil and Regular Gas inside a dedicated gas container (strictly outdoor).", done: false, tools: ["measuring_cup", "safety_glasses"] },
+      { id: "s5-2", text: "Adjust the carburetor throttle needle play so cable slides open and snaps closed like a spring.", done: false, tools: ["screwdriver", "pliers"] },
+      { id: "s5-3", text: "Tune the flower clutch nut on the gears to ensure standard bike pedaling works with lever pulled.", done: false, tools: ["screwdriver", "wrench_14mm"] },
+      { id: "s5-4", text: "Perform a dry-run push test with spark plug out: verify the piston fires back-and-forth smoothly.", done: false, tools: ["spark_plug_socket", "safety_glasses"] }
     ]
   }
 ];

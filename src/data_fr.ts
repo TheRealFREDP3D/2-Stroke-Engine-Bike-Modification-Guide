@@ -275,14 +275,14 @@ export const ASSEMBLY_STEPS_FR: AssemblyStep[] = [
     id: "step1",
     phase: "Preparation",
     title: "Inspection pré-montage du cadre & Outillage",
-    description: "Avant de monter de lourdes pièces de fonderie sur votre cadre de vélo standard, nous devons contrôler que le châssis est apte à supporter ces nouvelles contraintes.",
+    description: "Avant de monter de lourdes pièces de fonderie sur votre cadre de vélo standard, nous devons contrôler que le châssis l'est apte à supporter ces nouvelles contraintes.",
     sparkyTip: "Préparez vos outils ! Vous aurez besoin de clés plates (10, 12, 14mm), d'un tournevis, de clés Allen, de chiffons propres et d'un flacon de frein filet bleu (Loctite 242).",
     difficulty: "Easy",
     mechanicConcept: "Santé Structurelle : Vérifiez les soudures du cadre, en particulier vers le boîtier de pédalier. Les vibrations du moteur reveleront vite les moindres faiblesses !",
     subtasks: [
-      { id: "s1-1", text: "Nettoyer soigneusement le triangle central du cadre pour éliminer la graisse et permettre aux brides de bien agripper le métal.", done: false },
-      { id: "s1-2", text: "Vérifier l'efficacité des freins avant et arrière : les patins de frein doivent être épais et fermes.", done: false },
-      { id: "s1-3", text: "S'assurer que les rayons de la roue arrière sont stables et bien tendus en les pinçant légèrement.", done: false }
+      { id: "s1-1", text: "Nettoyer soigneusement le triangle central du cadre pour éliminer la graisse et permettre aux brides de bien agripper le métal.", done: false, tools: ["rag", "degreaser"] },
+      { id: "s1-2", text: "Vérifier l'efficacité des freins avant et arrière : les patins de frein doivent être épais et fermes.", done: false, tools: ["safety_glasses", "wrench_10mm"] },
+      { id: "s1-3", text: "S'assurer que les rayons de la roue arrière sont stables et bien tendus en les pinçant légèrement.", done: false, tools: ["spoke_wrench", "wrench_12mm"] }
     ]
   },
   {
@@ -294,9 +294,9 @@ export const ASSEMBLY_STEPS_FR: AssemblyStep[] = [
     difficulty: "Supervised",
     mechanicConcept: "Répartition du Couples : Un serrage excessif peut écraser ou déformer les tubes fins en aluminium. Serrez fermement et bloquez au frein filet bleu.",
     subtasks: [
-      { id: "s2-1", text: "Réaliser un montage à blanc pour valider le passage du pédalier, de la bougie et du pot d'échappement.", done: false },
-      { id: "s2-2", text: "Placer des cales de caoutchouc élastomère sous les colliers de fixation pour absorber les sifflements vibratoires.", done: false },
-      { id: "s2-3", text: "Serrer les fixations avant et arrière de manière alternée par petites étapes pour éviter les contraintes de torsion.", done: false }
+      { id: "s2-1", text: "Réaliser un montage à blanc pour valider le passage du pédalier, de la bougie et du pot d'échappement.", done: false, tools: ["safety_glasses", "allen_keys"] },
+      { id: "s2-2", text: "Placer des cales de caoutchouc élastomère sous les colliers de fixation pour absorber les sifflements vibratoires.", done: false, tools: ["scissors", "rubber_shims"] },
+      { id: "s2-3", text: "Serrer les fixations avant et arrière de manière alternée par petites étapes pour éviter les contraintes de torsion.", done: false, tools: ["torque_wrench", "wrench_10mm", "threadlocker"] }
     ]
   },
   {
@@ -308,10 +308,10 @@ export const ASSEMBLY_STEPS_FR: AssemblyStep[] = [
     difficulty: "Challenging",
     mechanicConcept: "Coefficient de Friction : Un alignement incorrect dissipe la puissance motrice sous forme de chaleur intense, détruisant prématurément les roulements.",
     subtasks: [
-      { id: "s3-1", text: "Nettoyer les rayons puis poser les deux disques amortisseurs en caoutchouc concentriquement au moyeu arrière.", done: false },
-      { id: "s3-2", text: "Installer les brides de serrage en métal et serrer les 9 boulons selon un motif croisé en étoile inverse.", done: false },
-      { id: "s3-3", text: "Enfiler la chaîne, ajuster la longueur à l'aide du dérive-chaîne et poser l'attache-rapide.", done: false },
-      { id: "s3-4", text: "Brider le galet tendeur de chaîne sur le cadre arrière et régler l'alignement pour avoir une flèche d'environ 1,2 cm.", done: false }
+      { id: "s3-1", text: "Nettoyer les rayons puis poser les deux disques amortisseurs en caoutchouc concentriquement au moyeu arrière.", done: false, tools: ["degreaser", "rag"] },
+      { id: "s3-2", text: "Installer les brides de serrage en métal et serrer les 9 boulons selon un motif croisé en étoile inverse.", done: false, tools: ["wrench_10mm", "wrench_12mm", "torque_wrench"] },
+      { id: "s3-3", text: "Enfiler la chaîne, ajuster la longueur à l'aide du dérive-chaîne et poser l'attache-rapide.", done: false, tools: ["chain_breaker", "pliers", "safety_glasses"] },
+      { id: "s3-4", text: "Brider le galet tendeur de chaîne sur le cadre arrière et régler l'alignement pour avoir une flèche d'environ 1,2 cm.", done: false, tools: ["wrench_14mm", "wrench_10mm", "threadlocker"] }
     ]
   },
   {
@@ -323,10 +323,10 @@ export const ASSEMBLY_STEPS_FR: AssemblyStep[] = [
     difficulty: "Challenging",
     mechanicConcept: "Pression Hydrostatique & Circuit de Masse : Le robinet sous réservoir dépend de l'attraction terrestre. Le coupe-circuit dévie le potentiel vers le châssis.",
     subtasks: [
-      { id: "s4-1", text: "Fixer solidement le réservoir au tube supérieur en intercalant des patins de feutre ou de caoutchouc.", done: false },
-      { id: "s4-2", text: "Visser le robinet d'essence au réservoir, raccorder le filtre transparent et brancher proprement au carburateur.", done: false },
-      { id: "s4-3", text: "Monter la poignée d'accélérateur rotative, le levier d'embrayage et le bouton rouge coupe-circuit sur votre guidon.", done: false },
-      { id: "s4-4", text: "Connecter et isoler proprement les fils électriques de l'allumage avec de la gaine thermo protectrice contre la pluie.", done: false }
+      { id: "s4-1", text: "Fixer solidement le réservoir au tube supérieur en intercalant des patins de feutre ou de caoutchouc.", done: false, tools: ["wrench_10mm", "screwdriver"] },
+      { id: "s4-2", text: "Visser le robinet d'essence au réservoir, raccorder le filtre transparent et brancher proprement au carburateur.", done: false, tools: ["pliers", "scissors"] },
+      { id: "s4-3", text: "Monter la poignée d'accélérateur rotative, le levier d'embrayage et le bouton rouge coupe-circuit sur votre guidon.", done: false, tools: ["allen_keys", "screwdriver"] },
+      { id: "s4-4", text: "Connecter et isoler proprement les fils électriques de l'allumage avec de la gaine thermo protectrice contre la pluie.", done: false, tools: ["electrical_tape", "pliers"] }
     ]
   },
   {
@@ -338,10 +338,10 @@ export const ASSEMBLY_STEPS_FR: AssemblyStep[] = [
     difficulty: "Supervised",
     mechanicConcept: "Viscosité et Coefficient d'Adhérence : L'huile spécialisée 2T protège le cylindre en mouvement. L'embrayage équilibre la tenue sous couple.",
     subtasks: [
-      { id: "s5-1", text: "Préparer soigneusement le mélange d'huile synthétique 2T et d'essence sans plomb dans un jerrican homologué en extérieur.", done: false },
-      { id: "s5-2", text: "Vérifier le coulissement libre de l'aiguille de gaz du boisseau de carburateur : elle doit revenir d'un coup de ressort sec.", done: false },
-      { id: "s5-3", text: "Ajuster l'écrou cranté d'embrayage (flower nut) de manière à pouvoir pédaler librement avec le levier d'embrayage verrouillé au guidon.", done: false },
-      { id: "s5-4", text: "Effectuer un essai de roulement à vide sans bougie : s'assurer du bon coulissement réciproque de l'équipage piston-vilebrequin.", done: false }
+      { id: "s5-1", text: "Préparer soigneusement le mélange d'huile synthétique 2T et d'essence sans plomb dans un jerrican homologué en extérieur.", done: false, tools: ["measuring_cup", "safety_glasses"] },
+      { id: "s5-2", text: "Vérifier le coulissement libre de l'aiguille de gaz du boisseau de carburateur : elle doit revenir d'un coup de ressort sec.", done: false, tools: ["screwdriver", "pliers"] },
+      { id: "s5-3", text: "Ajuster l'écrou cranté d'embrayage (flower nut) de manière à pouvoir pédaler librement avec le levier d'embrayage verrouillé au guidon.", done: false, tools: ["screwdriver", "wrench_14mm"] },
+      { id: "s5-4", text: "Effectuer un essai de roulement à vide sans bougie : s'assurer du bon coulissement réciproque de l'équipage piston-vilebrequin.", done: false, tools: ["spark_plug_socket", "safety_glasses"] }
     ]
   }
 ];

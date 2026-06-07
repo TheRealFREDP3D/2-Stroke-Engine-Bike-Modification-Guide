@@ -53,7 +53,7 @@ export interface AssemblyStep {
   title: string;
   description: string;
   sparkyTip: string;
-  subtasks: { id: string; text: string; done: boolean }[];
+  subtasks: { id: string; text: string; done: boolean; tools?: string[] }[];
   difficulty: "Easy" | "Medium" | "Challenging" | "Supervised";
   mechanicConcept: string;
 }

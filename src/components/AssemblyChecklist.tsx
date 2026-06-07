@@ -23,8 +23,35 @@ import {
   PenSquare,
   ChevronDown,
   ChevronUp,
-  Download
+  Download,
+  Glasses,
+  Scissors,
+  Droplet,
+  Zap,
+  Hammer,
+  Layers
 } from "lucide-react";
+
+const TOOL_CONFIGS: Record<string, { icon: any; color: string }> = {
+  safety_glasses: { icon: Glasses, color: "text-sky-400 bg-sky-400/10 border-sky-400/20" },
+  wrench_10mm: { icon: Wrench, color: "text-amber-400 bg-amber-400/10 border-amber-400/20" },
+  wrench_12mm: { icon: Wrench, color: "text-amber-400 bg-amber-400/10 border-amber-400/20" },
+  wrench_14mm: { icon: Wrench, color: "text-amber-400 bg-amber-400/10 border-amber-400/20" },
+  torque_wrench: { icon: Wrench, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" },
+  spoke_wrench: { icon: Wrench, color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20" },
+  allen_keys: { icon: Wrench, color: "text-indigo-400 bg-indigo-400/10 border-indigo-400/20" },
+  scissors: { icon: Scissors, color: "text-rose-400 bg-rose-400/10 border-rose-400/20" },
+  chain_breaker: { icon: Scissors, color: "text-rose-400 bg-rose-400/10 border-rose-400/20" },
+  pliers: { icon: Wrench, color: "text-pink-400 bg-pink-400/10 border-pink-400/20" },
+  screwdriver: { icon: Wrench, color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20" },
+  electrical_tape: { icon: Layers, color: "text-indigo-400 bg-indigo-400/10 border-indigo-400/20" },
+  measuring_cup: { icon: Droplet, color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" },
+  spark_plug_socket: { icon: Zap, color: "text-red-400 bg-red-400/10 border-red-400/20" },
+  rag: { icon: FileText, color: "text-gray-400 bg-gray-400/10 border-gray-400/20" },
+  degreaser: { icon: Droplet, color: "text-cyan-400 bg-cyan-400/10 border-cyan-400/20" },
+  threadlocker: { icon: Droplet, color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" },
+  rubber_shims: { icon: Layers, color: "text-gray-400 bg-gray-400/10 border-gray-400/20" },
+};
 
 interface Props {
   steps: AssemblyStep[];
@@ -537,9 +564,35 @@ export function AssemblyChecklist({ steps, onTaskToggle, onUnlockBadge, lang }: 
                     )}
                   </span>
                   <div className="flex-1 text-sm leading-relaxed">
-                    <span className={task.done ? "line-through text-gray-500" : ""}>
+                    <span className={task.done ? "line-through text-gray-500 block" : "block text-white"}>
                       {task.text}
                     </span>
+                    {task.tools && task.tools.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                        <span className="text-[10px] text-gray-500 font-mono">
+                          {(t as any).checklist_required_tools || "Required Tools:"}
+                        </span>
+                        {task.tools.map((toolId) => {
+                          const config = TOOL_CONFIGS[toolId] || { icon: Wrench, color: "text-gray-400 bg-gray-400/10 border-gray-400/20" };
+                          const IconComp = config.icon;
+                          const toolLabel = (t as any)[`tool_${toolId}`] || toolId;
+                          return (
+                            <div
+                              key={toolId}
+                              className={`relative group/tool flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] font-mono select-none ${config.color}`}
+                              title={toolLabel}
+                            >
+                              <IconComp className="w-3 h-3 shrink-0" />
+                              <span>{toolLabel}</span>
+                              {/* Hover Tooltip */}
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tool:block z-45 bg-gray-950 border border-gray-800 text-white text-[10px] px-2.5 py-1 rounded-md shadow-2xl tracking-wide font-sans whitespace-nowrap">
+                                🔧 {toolLabel}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </button>
               ))}
